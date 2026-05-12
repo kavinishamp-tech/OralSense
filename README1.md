@@ -1,0 +1,284 @@
+# OralSense
+Multimodal Oral Cancer Risk Stratification Using Smartphone Images and Areca Nut–Inclusive Behavioral Metadata: A Cross-Population Explainable AI Study
+🦷 OralSense — Multimodal Oral Cancer Risk Stratification
+
+Multimodal Oral Cancer Risk Stratification Using Smartphone Images and Areca Nut–Inclusive Behavioral Metadata: A Cross-Population Explainable AI Study
+
+📌 Overview
+OralSense is a deep learning clinical decision support system for early oral cancer risk stratification using smartphone oral cavity images combined with behavioral metadata (areca nut, tobacco, alcohol, age, sex). The system uses two complementary AI models with Monte Carlo Dropout uncertainty estimation and provides explainable predictions through Grad-CAM heatmaps.
+The project addresses a critical healthcare gap in South Asia, where oral cancer rates are among the highest in the world due to widespread areca nut and tobacco use.
+
+🎯 Key Results
+ModelValidation AccuracyImage-Only (MobileNetV2)90.3%Multimodal (Image + Metadata)93.1%
+Risk classes:
+
+✅ Normal — No signs of malignancy
+⚠️ Variations — Minor tissue variations
+🔶 OPMD — Oral Potentially Malignant Disorder
+🔴 OC — Oral Cancer (immediate referral required)
+
+<img width="1360" height="1640" alt="image" src="https://github.com/user-attachments/assets/1cb71809-7a87-47c5-9b94-cd512f8e288e" />
+
+
+<details>
+<summary><b>📁 Project structure</b></summary>
+<pre>
+oral_cancer_ai/
+│
+├── app.py                    # Flask backend API
+├── database.py               # SQLite patient database
+├── index.html                # OralSense web app frontend
+├── patient_history.html      # History dashboard
+│
+├── data/
+│   ├── augmented/
+│   │   ├── Normal/           # 2,145 images
+│   │   ├── OC/               # 500 images (aug. from 20)
+│   │   ├── OPMD/             # 500 images (aug. from 125)
+│   │   └── Variations/       # 500 images (aug. from 179)
+│   ├── metadata_clean.csv
+│   ├── train.csv
+│   ├── val.csv
+│   └── test.csv
+│
+├── models/
+│   ├── best_model.h5         # Image-only model · 90.3% acc
+│   └── multimodal_model.h5   # Multimodal model · 93.1% acc
+│
+├── notebooks/
+│   ├── augment_dataset.py
+│   ├── train_model.py
+│   ├── evaluate_model.py
+│   ├── gradcam.py
+│   ├── train_multimodal.py
+│   ├── retrain_multimodal.py
+│   └── generate_report.py
+│
+└── results/
+    ├── confusion_matrix.png
+    ├── gradcam_results.png
+    ├── multimodal_confusion_matrix.png
+    └── project_report.pdf
+</pre>
+</details>
+
+📦 Dataset
+Primary — SMART-OM
+
+2,469 images, 331 subjects, Tamil Nadu, India
+4 classes: Normal, Variation, OPMD, Oral Cancer
+Metadata: areca nut, tobacco type, alcohol, age, sex
+DOI: 10.6084/m9.figshare.31341790
+
+Supplementary — CODE (planned)
+
+~500 images, 110 subjects, Ragas Dental College, Chennai
+DOI: 10.6084/m9.figshare.30550889
+
+Validation — Peradeniya (planned)
+
+3,000 images, 714 subjects, Sri Lanka
+Cross-population validation
+
+
+🛠️ Tech Stack
+CategoryTechnologyLanguagePython 3.10Deep LearningTensorFlow / KerasPretrained ModelMobileNetV2 (ImageNet)Loss FunctionFocal Loss (γ=2, α=0.25)UncertaintyMonte Carlo Dropout (20 runs)Image ProcessingOpenCV, PillowData HandlingPandas, NumPyVisualizationMatplotlib, SeabornExplainabilityGrad-CAMWeb BackendFlask + Flask-CORSDatabaseSQLiteFrontendHTML5, CSS3, JavaScript
+
+⚡ Setup & Installation
+
+> Prerequisites: **Python 3.10**, **Anaconda**, **SMART-OM dataset** extracted locally.
+
+---
+
+### Step 1 — Create environment & install packages
+
+```bash
+conda create -n oralcancer python=3.10 -y
+conda activate oralcancer
+pip install tensorflow opencv-python pandas numpy matplotlib seaborn scikit-learn flask flask-cors tqdm openpyxl
+```
+
+---
+
+### Step 2 — Check dataset
+
+```bash
+python notebooks/check_dataset.py
+```
+
+✅ Expected: `Total images found: 2469`
+
+---
+
+### Step 3 — Prepare & augment data
+
+```bash
+python notebooks/prepare_dataset.py
+```
+
+✅ Expected: `train.csv`, `val.csv`, `test.csv` created in `data/`
+
+```bash
+python notebooks/augment_dataset.py
+```
+
+✅ Expected: `data/augmented/` with Normal, OC, OPMD, Variations subfolders
+
+---
+
+### Step 4 — Train image model *(30–45 min)*
+
+```bash
+python notebooks/train_model.py
+```
+
+✅ Expected: `models/best_model.h5` saved · val accuracy ~90%
+
+---
+
+### Step 5 — Evaluate image model + Grad-CAM
+
+```bash
+python notebooks/evaluate_model.py
+python notebooks/gradcam.py
+```
+
+✅ Expected: `results/confusion_matrix.png` and `results/gradcam_results.png` saved
+
+---
+
+### Step 6 — Prepare metadata
+
+```bash
+python notebooks/explore_metadata.py
+python notebooks/prepare_multimodal.py
+```
+
+✅ Expected: `data/metadata_clean.csv` with 331 patients
+
+---
+
+### Step 7 — Train multimodal model *(30–45 min)*
+
+```bash
+python notebooks/retrain_multimodal.py
+```
+
+✅ Expected: `models/multimodal_model.h5` saved · val accuracy ~93%
+
+---
+
+### Step 8 — Evaluate multimodal model
+
+```bash
+python notebooks/evaluate_multimodal.py
+```
+
+✅ Expected: `results/multimodal_confusion_matrix.png` saved
+
+---
+
+### Step 9 — Generate PDF report
+
+```bash
+python notebooks/generate_report.py
+```
+
+✅ Expected: `results/project_report.pdf` saved
+
+---
+
+### Step 10 — Launch web app
+
+**Terminal 1** — keep this running:
+
+```bash
+python app.py
+```
+
+✅ Expected:
+```
+Models loaded!
+Running on http://127.0.0.1:5000
+```
+
+**Terminal 2** — open the app:
+
+```bash
+start chrome http://127.0.0.1:5000
+```
+
+---
+
+> **Windows only** — if `python` is not recognized, use the full path:
+> ```bash
+> & "C:\Users\YourName\anaconda3\envs\oralcancer\python.exe" notebooks/train_model.py
+> ```
+> Replace `YourName` with your actual Windows username.
+
+🌐 OralSense Web App Features
+
+📷 Upload oral cavity smartphone photo
+👤 Patient details — name, ID, age, sex, phone, address, doctor, department
+⚠️ Habit history — smoking, chewing, areca nut, alcohol
+🤖 Dual AI prediction — image model + multimodal model
+📊 Monte Carlo Dropout — 20 forward passes for uncertainty estimation
+🔥 Grad-CAM heatmap — shows which area AI focused on
+📋 Patient report — auto-generated with clinical recommendation
+🖨️ Print/PDF — save patient report
+📊 Patient history — track risk progression across visits
+🔴 Risk alerts — automatic alert if risk increased since last visit
+💾 SQLite database — all scans saved automatically
+
+
+🧠 Model Architecture
+Image-Only Model
+Input (224×224×3)
+    → MobileNetV2 (pretrained ImageNet, last 30 layers unfrozen)
+    → GlobalAveragePooling2D
+    → Dense(256, ReLU) → Dropout(0.5)
+    → Dense(128, ReLU) → Dropout(0.4)
+    → Dense(4, Softmax)
+Multimodal Fusion Model
+Image Input (224×224×3)       Metadata Input (6 features)
+    → MobileNetV2                 → Dense(32, ReLU)
+    → GlobalAveragePooling2D      → BatchNormalization
+    → Dense(256, ReLU)            → Dense(16, ReLU)
+    → Dropout(0.5)                        |
+              └────── Concatenate ────────┘
+                          → Dense(128, ReLU)
+                          → Dropout(0.4)
+                          → Dense(4, Softmax)
+Metadata Features
+FeatureTypeDescriptionAgeContinuous (0–1)Patient age normalizedSexBinary0=Female, 1=MaleSmokingBinarySmoking habitChewingBinaryChewing tobaccoAreca NutBinaryAreca nut usageAlcoholBinaryAlcohol consumption
+
+⚕️ Clinical Risk Levels & Recommendations
+RiskClassRecommended Action✅ LowNormalRoutine follow-up in 12 months⚠️ Low-MediumVariationsFollow-up in 3–6 months🔶 MediumOPMDRefer to specialist within 2–4 weeks🔴 HighOCImmediate oncologist referral
+
+📊 Training Details
+
+Optimizer: Adam (lr=1e-4)
+Loss: Focal Loss (γ=2.0, α=0.25) — handles class imbalance
+Class Weights: Balanced — OC gets 1.82× weight vs Normal 0.42×
+Augmentation: Flip, rotation, brightness, zoom, shear
+Early Stopping: Patience=10 on val_accuracy
+Uncertainty: Monte Carlo Dropout with 20 inference passes
+Decision Rule: Always use higher risk result between both models
+
+
+⚠️ Disclaimer
+This system is for research and screening purposes only. It is not a substitute for clinical diagnosis. All predictions must be reviewed by a qualified medical professional.
+
+👩‍💻 Author
+S.Sruti
+M P Kavi Nisha
+Oral Cancer Risk Stratification using Multimodal AI
+Tamil Nadu, India · May 2026
+
+📚 References
+
+Devindi et al. — Multimodal Deep CNN Pipeline for AI-Assisted Early Detection of Oral Cancer — IEEE Access, 2024
+Frontiers in Oral Health — AI and the Diagnosis of Oral Cavity Cancer from Clinical Photographs — 2025
+Ou et al. — Deep Learning Based Multimodal Fusion Model for Skin Lesion Diagnosis — Frontiers in Surgery, 2022
+Sharma et al. — Exploring Data Modalities and Advances in AI for Oral Cancer Detection — IET Image Processing, 2025
+Pivarathne et al. — A Comprehensive Dataset of Annotated Oral Cavity Images — Oral Oncology, 2024
