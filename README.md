@@ -278,6 +278,6 @@ Open your browser at: [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
 ## Authors
 
-**S. Sruti & M P Kavi Nisha**  
+** M P Kavi Nisha & S. Sruti **  
 Oral Cancer Risk Stratification using Multimodal AI  
 Tamil Nadu, India · May 2026
